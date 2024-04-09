@@ -155,48 +155,50 @@ public class Main {
     }
 
     //metodo per selezionare un evento dall'elenco
+    private static void listEvents(List<Event> events) {
+        System.out.println("Select an event (or 0 to cancel):");
+        for (int i = 0; i < events.size(); i++) {
+            System.out.println((i + 1) + ": " + events.get(i).getTitle());
+        }
+    }
+
+    private static int getUserSelection(Scanner scanner, int maxOption) {
+        //inizia con una selezione non valida per iniziare il loop almeno una volta
+        int selection = -2;
+        while (selection < -1 || selection > maxOption) {
+            try {
+                System.out.print("your choice: ");
+                String input = scanner.nextLine();
+                selection = Integer.parseInt(input) - 1;
+                if (selection == -1) {
+                    System.out.println("selection cancelled.");
+                } else if (selection < -1 || selection >= maxOption) {
+                    System.out.println("invalid, please try again.");
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("Please enter a valid number.");
+            }
+        }
+        return selection;
+    }
     private static Event selectEvent(EventManager eventManager, Scanner scanner) {
-        // Ottiene la lista di eventi da EventManager
         List<Event> events = eventManager.getEvents();
-        if(events.isEmpty()) {
+        if (events.isEmpty()) {
             System.out.println("No events to select.");
             return null;
         }
 
-        Event selectedEvent = null;
+        listEvents(events);
+        int eventIndex = getUserSelection(scanner, events.size()); // Get user selection
 
-        do {
-            System.out.println("Select an event (or 0 to cancel");
-            //visualizza tutti gli eventi con un indice
-            for (int i = 0; i < events.size(); i++) {
-                System.out.println((i + 1) + ": " + events.get(i).getTitle());
-            }
-            //input dall'utente per scegliere evento
-            String input = scanner.nextLine();
-            int eventIndex;
-            try {
-                eventIndex = Integer.parseInt(input) - 1;
-                if(eventIndex == -1){
-                    //cancella la selezione ddell'utente
-                    System.out.println("selection cancelled");
-                    return null;
-                }
-                //se la selezione è valida, assegna l'evento selezionato
-                if (eventIndex >= 0 && eventIndex < events.size()) {
-
-                    selectedEvent = events.get(eventIndex);
-                    System.out.printf("You've selected: " + selectedEvent.getTitle() + " ");
-                    return selectedEvent;
-                }else{
-                    System.out.println("Invalid selection, please try again.");
-                }
-            } catch (NumberFormatException e) {
-                System.out.println("Please enter a valid number");
-            }
-        }while(selectedEvent == null);
-        return selectedEvent;
+        if (eventIndex >= 0) {
+            Event selectedEvent = events.get(eventIndex);
+            System.out.println("You've selected: " + selectedEvent.getTitle() + " ");
+            return selectedEvent;
+        } else {
+            return null;
+        }
     }
-
     //metodo per creare una prenotazione per un evento specifico
     private static void reserveSeats(EventManager eventManager, Scanner scanner) {
         Event selectedEvent = selectEvent(eventManager, scanner);
