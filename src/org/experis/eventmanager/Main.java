@@ -19,10 +19,10 @@ public class Main {
         Scanner scanner = new Scanner(System.in);
         //inizializza collection eventi
         EventManager eventManager = new EventManager("EventManager Title");
-        // Initialize FileManager with the path to your events file.
+        // inizializza file manager con il file path
         FileManager fileManager = new FileManager(FILE_PATH);
 
-        // Use FileManager to load events into EventManager.
+        // usa filemanager per caricare gli eventi in eventmanager
         List<Event> loadedEvents = fileManager.readEvents();
         loadedEvents.forEach(eventManager::addEvent);
 
