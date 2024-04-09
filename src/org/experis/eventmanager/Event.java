@@ -44,6 +44,7 @@ public class Event {
 
     public void setDate(LocalDate date) {
         this.date = date;
+        validateDate();
     }
 
 
