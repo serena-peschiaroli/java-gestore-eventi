@@ -189,7 +189,7 @@ public class Main {
         }
 
         listEvents(events);
-        int eventIndex = getUserSelection(scanner, events.size()); // Get user selection
+        int eventIndex = getUserSelection(scanner, events.size());
 
         if (eventIndex >= 0) {
             Event selectedEvent = events.get(eventIndex);
@@ -255,10 +255,10 @@ public class Main {
             if (selectedEvent instanceof Concert) {
                 Concert concert = (Concert) selectedEvent;
                 BigDecimal refundAmount = concert.calculatePrice(reservedSeatsToCancel);
-                System.out.println("cancellation succesful. " + reservedSeatsToCancel + " seats cancelled, refunded amount :" + refundAmount + " available seats: "  + (concert.getSeatCapacity() - concert.getReservedSeat()));
+                System.out.println("cancellation successful. " + reservedSeatsToCancel + " seats cancelled, refunded amount :" + refundAmount + " available seats: "  + (concert.getSeatCapacity() - concert.getReservedSeat()));
 
             } else {
-                System.out.println("cancellation succesful. " + reservedSeatsToCancel + " seats cancelled. Now " + selectedEvent.getReservedSeat() + " seats are reserved. Available: " + (selectedEvent.getSeatCapacity() - selectedEvent.getReservedSeat()));
+                System.out.println("cancellation successful. " + reservedSeatsToCancel + " seats cancelled. Now " + selectedEvent.getReservedSeat() + " seats are reserved. Available: " + (selectedEvent.getSeatCapacity() - selectedEvent.getReservedSeat()));
             }
 
         } catch (NumberFormatException e) {
