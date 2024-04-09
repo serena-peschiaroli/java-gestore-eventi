@@ -62,7 +62,7 @@ public class Concert extends Event{
 
     //metodo per restituire il prezzo formattato
     public String getPriceFormatted(){
-        return price.setScale(2, RoundingMode.HALF_EVEN) + "€";
+        return price.setScale(2, RoundingMode.HALF_EVEN) + " €";
     }
 
     //override di tostring
@@ -90,8 +90,11 @@ public class Concert extends Event{
 
     //metodo per cacolare il prezzo
     public BigDecimal calculatePrice(int seats){
-        return price.multiply(new BigDecimal(seats));
+        BigDecimal totalPrice = price.multiply(new BigDecimal(seats));
+        return totalPrice.setScale(2, RoundingMode.HALF_EVEN); // Rounds the total price to two decimal places
     }
+
+
 
     //override di makeReservation
 

@@ -217,7 +217,7 @@ public class Main {
             if (selectedEvent instanceof Concert) {
                 Concert concert = (Concert) selectedEvent;
                 BigDecimal totalPrice = concert.calculatePrice(seatsToReserve);
-                System.out.println("Reservation successful. Total price: " + totalPrice + "Reserved seats:  " + concert.getReservedSeat() + " Available seats: " + (concert.getSeatCapacity() - concert.getReservedSeat()));
+                System.out.println("Reservation successful. Total price: " + totalPrice + " " + " Reserved seats:  " + concert.getReservedSeat() + " Available seats: " + (concert.getSeatCapacity() - concert.getReservedSeat()));
             } else {
                 System.out.println("Reservation successful. Reserved seats: " + selectedEvent.getReservedSeat() + ". Available seats: " + (selectedEvent.getSeatCapacity() - selectedEvent.getReservedSeat()));
             }

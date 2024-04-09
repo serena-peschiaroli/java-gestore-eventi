@@ -1,5 +1,11 @@
 Event;Public Reading;2024-04-11;60;0
-Concert;Cello concert;2024-04-12;30;5;18:30;12.99
-Concert;Jazz concert;2024-04-17;60;2;18:30;12.99
+Concert;Cello concert;2024-04-12;30;3;18:30;12.99
+Concert;Jazz concert;2024-04-17;60;0;18:30;12.99
 Event;Revisited Macbeth play;2024-04-12;65;0
 Concert;Piano concert;2024-04-15;70;0;14:30;25.80
+Event;Exhibition of works by local artists;2024-04-18;45;0
+Concert;Primus cover band;2024-04-19;200;0;20:30;59.90
+Concert;Dark Lunacy;2024-04-19;200;0;19:30;50
+Concert;Gojira in concert;2024-04-23;500;0;20:30;70.70
+Event;The brother Karamazov play;2024-04-22;40;0
+Concert;Blues concert;2024-04-29;12;0;18:30;15
