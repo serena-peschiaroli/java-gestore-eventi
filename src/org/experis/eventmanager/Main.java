@@ -178,12 +178,14 @@ public class Main {
                 eventIndex = Integer.parseInt(input) - 1;
                 if(eventIndex == -1){
                     //cancella la selezione ddell'utente
+                    System.out.println("selection cancelled");
                     return null;
                 }
                 //se la selezione è valida, assegna l'evento selezionato
                 if (eventIndex >= 0 && eventIndex < events.size()) {
 
                     selectedEvent = events.get(eventIndex);
+                    System.out.printf("You've selected: " + selectedEvent.getTitle() + " ");
                     return selectedEvent;
                 }else{
                     System.out.println("Invalid selection, please try again.");
@@ -200,17 +202,24 @@ public class Main {
         Event selectedEvent = selectEvent(eventManager, scanner);
         //se nessun evento selezionato, termina il metodo
         if (selectedEvent == null) return;
+        System.out.println("Enter the number of seat to reserve: ");
 
-        int seatsToReserve = 0;
+        int seatsToReserve = getIntInput(scanner);
         try {
-            seatsToReserve = Integer.parseInt(scanner.nextLine());
             //controlla che il numero di posto sia positivo
             if (seatsToReserve <= 0) {
                 throw new IllegalArgumentException("Number of seats to reserve must be positive.");
             }
             //effettua la prenotazione e informa del successo
             selectedEvent.makeReservation(seatsToReserve);
-            System.out.println("Reservation successful. Reserved seats: " + selectedEvent.getReservedSeat() + ". Available seats: " + (selectedEvent.getSeatCapacity() - selectedEvent.getReservedSeat()));
+            if (selectedEvent instanceof Concert) {
+                Concert concert = (Concert) selectedEvent;
+                BigDecimal totalPrice = concert.calculatePrice(seatsToReserve);
+                System.out.println("Reservation successful. Total price: " + totalPrice + "Reserved seats:  " + concert.getReservedSeat() + " Available seats: " + (concert.getSeatCapacity() - concert.getReservedSeat()));
+            } else {
+                System.out.println("Reservation successful. Reserved seats: " + selectedEvent.getReservedSeat() + ". Available seats: " + (selectedEvent.getSeatCapacity() - selectedEvent.getReservedSeat()));
+            }
+
         } catch (NumberFormatException e) {
             //gestisce l'input non numerico
             System.out.println("Please enter a valid number.");
@@ -224,11 +233,14 @@ public class Main {
     private static void cancelReservation(EventManager eventManager, Scanner scanner) {
         Event selectedEvent = selectEvent(eventManager, scanner);
         //termina metodo se nessun evento è selezionato
-        if (selectedEvent == null) return;
+        if (selectedEvent == null){
+            System.out.println("Cancellation process terminated");
+            return;
+        }
+        System.out.println("enter the number of seats to cancel: ");
 
-        int reservedSeatsToCancel = 0;
+        int reservedSeatsToCancel = getIntInput(scanner);
         try {
-            reservedSeatsToCancel = Integer.parseInt(scanner.nextLine());
             //controlla che il numero di posti da cancellare sia positivo
             if (reservedSeatsToCancel <= 0) {
                 throw new IllegalArgumentException("number of seats to cancel must be positive");
@@ -238,11 +250,30 @@ public class Main {
                 throw new IllegalArgumentException("cannot cancel more seats than are currently reserved");
             }
             selectedEvent.cancelReservation(reservedSeatsToCancel);
-            System.out.println("cancellation succesful. " + reservedSeatsToCancel + " seats cancelled. Now " + selectedEvent.getReservedSeat() + " seats are reserved. Available: " + (selectedEvent.getSeatCapacity() - selectedEvent.getReservedSeat()));
+            if (selectedEvent instanceof Concert) {
+                Concert concert = (Concert) selectedEvent;
+                BigDecimal refundAmount = concert.calculatePrice(reservedSeatsToCancel);
+                System.out.println("cancellation succesful. " + reservedSeatsToCancel + " seats cancelled, refunded amount :" + refundAmount + " available seats: "  + (concert.getSeatCapacity() - concert.getReservedSeat()));
+
+            } else {
+                System.out.println("cancellation succesful. " + reservedSeatsToCancel + " seats cancelled. Now " + selectedEvent.getReservedSeat() + " seats are reserved. Available: " + (selectedEvent.getSeatCapacity() - selectedEvent.getReservedSeat()));
+            }
+
         } catch (NumberFormatException e) {
             System.out.println("Please enter a valid number.");
         } catch (IllegalArgumentException | IllegalStateException e) {
             System.out.println(e.getMessage());
+        }
+    }
+
+    private static int getIntInput(Scanner scanner) {
+        while (true) {
+            try {
+                int input = Integer.parseInt(scanner.nextLine());
+                return input;
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid. Please enter a valid number");
+            }
         }
     }
 
@@ -252,7 +283,8 @@ public class Main {
             System.out.println("No events available.");
         } else {
             System.out.println("All events:");
-            eventManager.getEvents().forEach(event -> System.out.println(event.toString()));
+            // usa il toString di EventManager per avere una lista ordinata per data di eventi
+            System.out.println(eventManager.toString());
         }
     }
 

@@ -88,4 +88,16 @@ public class Concert extends Event{
         }
     }
 
+    //metodo per cacolare il prezzo
+    public BigDecimal calculatePrice(int seats){
+        return price.multiply(new BigDecimal(seats));
+    }
+
+    //override di makeReservation
+
+
+    @Override
+    public void makeReservation(int seats) {
+        super.makeReservation(seats);
+    }
 }
