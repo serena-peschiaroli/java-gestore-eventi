@@ -16,7 +16,9 @@ public class Concert extends Event{
     public Concert(String title, LocalDate date, int seatCapacity, int reservedSeat, LocalTime time, BigDecimal price) {
         super(title, date, seatCapacity, reservedSeat);
         this.time = time;
+        validateTime(time);
         this.price = price;
+        validatePrice(price);
 
     }
 
@@ -33,10 +35,12 @@ public class Concert extends Event{
     //setters
 
     public void setTime(LocalTime time) {
+        validateTime(time);
         this.time = time;
     }
 
     public void setPrice(BigDecimal price) {
+        validatePrice(price);
         this.price = price;
     }
 
@@ -44,8 +48,15 @@ public class Concert extends Event{
 
     //metodo per restituire data ed ora formattata
     public String getDateTimeFormatted(){
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
-        return getDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) + " " + time.format(formatter);
+        // fomrattazione della data
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        String formattedDate = getDate().format(dateFormatter);
+
+        // formattazione dell'ora
+        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
+        String formattedTime = time.format(timeFormatter);
+
+        return formattedDate + " " + formattedTime;
 
     }
 
@@ -53,4 +64,28 @@ public class Concert extends Event{
     public String getPriceFormatted(){
         return price.setScale(2, RoundingMode.HALF_EVEN) + "€";
     }
+
+    //override di tostring
+
+
+    @Override
+    public String toString() {
+        return  getDateTimeFormatted() + " - " + getTitle() + " - " + getPriceFormatted();
+    }
+
+    //validare l'ora
+    private void validateTime(LocalTime time) {
+        // l'ora dell'evento non deve essere passata
+        if (getDate().isEqual(LocalDate.now()) && time.isBefore(LocalTime.now())) {
+            throw new IllegalArgumentException("The concert time cannot be in the past.");
+        }
+    }
+
+    //validare il prezzo
+    private void validatePrice(BigDecimal price){
+        if (price.compareTo(BigDecimal.ZERO) < 0 ) {
+            throw new IllegalArgumentException("Price cannot be negative.");
+        }
+    }
+
 }

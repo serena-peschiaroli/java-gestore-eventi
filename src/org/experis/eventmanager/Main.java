@@ -1,12 +1,10 @@
 package org.experis.eventmanager;
 
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileWriter;
-import java.io.IOException;
+
+import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.ArrayList;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Scanner;
 
@@ -20,8 +18,14 @@ public class Main {
         //apre lo scanner
         Scanner scanner = new Scanner(System.in);
         //inizializza collection eventi
-       //dichiarazione arraylist e caricamento degli eventi precedentemente inseriti
-        List<Event> events = readFile();
+        EventManager eventManager = new EventManager("EventManager Title");
+        // Initialize FileManager with the path to your events file.
+        FileManager fileManager = new FileManager(FILE_PATH);
+
+        // Use FileManager to load events into EventManager.
+        List<Event> loadedEvents = fileManager.readEvents();
+        loadedEvents.forEach(eventManager::addEvent);
+
         //flag per il loop
         boolean exit = false;
 
@@ -33,26 +37,29 @@ public class Main {
             switch (choice) {
                 case "1":
                     //crea un nuovo evento
-                    createEvent(scanner, events);
+                    createEvent(scanner, eventManager);
                     break;
                 case "2":
                     //prenota dei posti
-                    reserveSeats(events, scanner);
+                    reserveSeats(eventManager, scanner);
                     break;
                 case "3":
                     //cancella prenotazioni
-                    cancelReservation(events, scanner);
+                    cancelReservation(eventManager, scanner);
                     break;
                 case "4":
                     //mostra tutti gli eventi
-                    showEvents(events);
+                    showEvents(eventManager);
                     break;
                 case "5":
                     //esce dal menu
                     exit = true;
                     System.out.println("Goodbye");
-                    //salva gli eventi modificati
-                    writeToFile(events);
+                    if (fileManager.writeEvents(eventManager.getEvents())) {
+                        System.out.println("Events saved successfully.");
+                    } else {
+                        System.out.println("Failed to save events.");
+                    }
                     break;
                 default:
                     //gestisce input non validi
@@ -65,46 +72,92 @@ public class Main {
         scanner.close();
 
         //controllare se il salvataggio va a buon fine
-        if(!writeToFile(events)){
+        if (!fileManager.writeEvents(eventManager.getEvents())) {
             System.out.println("Error writing to file");
         }
 
     }
 
     //metodo per creare eventi ed aggiungerli alla lista
-    private static void createEvent(Scanner scanner, List<Event> events) {
-        System.out.println("Insert event title");
-        String title = scanner.nextLine();
-        LocalDate date = null;
-        //loop per validare la data senza interrompere il programma
-        while(date == null){
-            System.out.println("Insert event date: ");
-            String dateString = scanner.nextLine();
+    private static void createEvent(Scanner scanner, EventManager eventManager) {
+        String eventType = getEventType(scanner);
+        String title = getEventTitle(scanner);
+        LocalDate date = getEventDate(scanner);
+        int seatCapacity = getSeatCapacity(scanner);
 
+        if ("1".equals(eventType)) {
+            eventManager.addEvent(new Event(title, date, seatCapacity, 0));
+            System.out.println("Event created successfully.");
+        } else if ("2".equals(eventType)) {
+            Concert concert = getConcertDetails(title, date, seatCapacity, scanner);
+            eventManager.addEvent(concert);
+            System.out.println("Concert created successfully.");
+        }
+    }
+    private static int getSeatCapacity(Scanner scanner) {
+        System.out.println("Insert the total capacity: ");
+        //TODO: try catch per validare input
+        return Integer.parseInt(scanner.nextLine());
+    }
+    private static Concert getConcertDetails(String title, LocalDate date, int seatCapacity, Scanner scanner) {
+        LocalTime time = null;
+        BigDecimal price = getConcertPrice(scanner);
+        while(time == null){
+            System.out.println("Insert concert time (HH:MM): ");
             try {
-                //cerca di parsare le date
-                date = LocalDate.parse(dateString);
-            }catch(Exception e){
-                System.out.println("Invalid date format, please use YYYY-mm-dd");
-
+                time = LocalTime.parse(scanner.nextLine());
+            } catch (Exception e) {
+                System.out.println("Invalid time format, please use hh:mm.");
             }
 
         }
 
-        System.out.println("Insert the total capacity: ");
-        int seatCapacity = Integer.parseInt(scanner.nextLine());
-        try{
-            //aggiunge un nuovo evento alla lista
-            Event event = new Event(title, date, seatCapacity, 0);
-            events.add(event);
-            System.out.println("Event created successfully");
-        }catch(Exception e){
-            System.out.println(e.getMessage());
+        return new Concert(title, date, seatCapacity, 0, time, price);
+    }
+    private static BigDecimal getConcertPrice(Scanner scanner) {
+        BigDecimal price = null;
+        while (price == null || price.compareTo(BigDecimal.ZERO) <= 0) {
+            System.out.println("Insert concert ticket price: ");
+            try {
+                price = new BigDecimal(scanner.nextLine());
+                if (price.compareTo(BigDecimal.ZERO) <= 0) {
+                    System.out.println("Price must be positive.");
+                    price = null;
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid price format, please enter a valid numeric value.");
+            }
         }
+        return price;
+    }
+
+    private static LocalDate getEventDate(Scanner scanner) {
+        LocalDate date = null;
+        while (date == null) {
+            System.out.println("Insert event date (YYYY-MM-DD): ");
+            try {
+                date = LocalDate.parse(scanner.nextLine());
+            } catch (Exception e) {
+                System.out.println("Invalid date format, please use YYYY-MM-DD.");
+            }
+        }
+        return date;
+    }
+
+    private static String getEventType(Scanner scanner) {
+        System.out.println("Insert event type (1 for generic Event, 2 for Concert): ");
+        return scanner.nextLine();
+    }
+
+    private static String getEventTitle(Scanner scanner) {
+        System.out.println("Insert event title: ");
+        return scanner.nextLine();
     }
 
     //metodo per selezionare un evento dall'elenco
-    private static Event selectEvent(List<Event> events, Scanner scanner) {
+    private static Event selectEvent(EventManager eventManager, Scanner scanner) {
+        // Ottiene la lista di eventi da EventManager
+        List<Event> events = eventManager.getEvents();
         if(events.isEmpty()) {
             System.out.println("No events to select.");
             return null;
@@ -143,8 +196,8 @@ public class Main {
     }
 
     //metodo per creare una prenotazione per un evento specifico
-    private static void reserveSeats(List<Event> events, Scanner scanner) {
-        Event selectedEvent = selectEvent(events, scanner);
+    private static void reserveSeats(EventManager eventManager, Scanner scanner) {
+        Event selectedEvent = selectEvent(eventManager, scanner);
         //se nessun evento selezionato, termina il metodo
         if (selectedEvent == null) return;
 
@@ -168,8 +221,8 @@ public class Main {
     }
 
     //metodo per cancellare una prenotazione per evento specifico
-    private static void cancelReservation(List<Event> events, Scanner scanner) {
-        Event selectedEvent = selectEvent(events, scanner);
+    private static void cancelReservation(EventManager eventManager, Scanner scanner) {
+        Event selectedEvent = selectEvent(eventManager, scanner);
         //termina metodo se nessun evento è selezionato
         if (selectedEvent == null) return;
 
@@ -194,60 +247,14 @@ public class Main {
     }
 
     //mostra gli eventi
-    private static void showEvents(List<Event> events) {
-        if(events.isEmpty()) {
+    private static void showEvents(EventManager eventManager) {
+        if (eventManager.getEvents().isEmpty()) {
             System.out.println("No events available.");
-            return;
+        } else {
+            System.out.println("All events:");
+            eventManager.getEvents().forEach(event -> System.out.println(event.toString()));
         }
-        System.out.println("All events:");
-        events.forEach(event -> System.out.println(event.toString()));
     }
 
-    //metodo per salvare gli eventi e renderli permanenti
-     private static boolean writeToFile(List<Event> events){
-        File eventsFile = new File(FILE_PATH);
-        boolean written = false;
-        try(FileWriter writer = new FileWriter(eventsFile, false)){
-            for (Event event : events){
-                writer.write(event.getTitle() + ";" + event.getDate() + ";" + event.getSeatCapacity() + "; " + event.getReservedSeat() + "\n");
-
-            }
-            written = true;
-
-        }catch (IOException e){
-            System.out.println("Unbale to write file");
-        }
-        return written;
-     }
-
-     //metodo per leggere i dettagli degli eventi da un file e ripopolarli in una collection
-
-    private static List<Event> readFile(){
-        //inizlizza una lista vuota
-        List<Event> events = new ArrayList<>();
-        //crea un oggetto file
-        File eventFile = new File(FILE_PATH);
-
-        //apre il file per la lettura
-        try(Scanner scanner = new Scanner(eventFile)){
-            //legge il file linea per linea
-            while(scanner.hasNextLine()){
-                String line = scanner.nextLine();
-                //divide la linea in parti
-                String[] parts = line.split(";");
-                if(parts.length == 4){
-                    String title = parts[0];
-                    LocalDate date =  LocalDate.parse(parts[1]);
-                    int seatCapacity = Integer.parseInt(parts[2]);
-                    int reservedSeat = Integer.parseInt(parts[3]);
-                    events.add(new Event(title, date, seatCapacity, reservedSeat));
-
-                }
-            }
-        }catch(FileNotFoundException e){
-            System.out.println("Unable to read file");
-        }
-        return events;
-    }
 
 }
